@@ -1,0 +1,9 @@
+[project]
+name = "support-agent-tools"
+version = "0.1.0"
+description = "Multi-agent client onboarding + support system with explicit tool-use loop, handoffs and guardrails."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
