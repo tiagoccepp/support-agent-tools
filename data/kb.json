@@ -1,0 +1,139 @@
+{
+    "articles": [
+        {
+            "category": "orders",
+            "content": "Standard shipping takes 3-5 business days and costs $4.99 (free over $75). Express shipping takes 1-2 business days and costs $12.99. You can track your order from the confirmation email link. If your order has not arrived after 7 business days, contact support with your order number so we can open an investigation with the carrier.",
+            "id": "kb-shipping",
+            "tags": [
+                "shipping",
+                "delivery",
+                "tracking",
+                "order status",
+                "express"
+            ],
+            "title": "Shipping times and order tracking"
+        },
+        {
+            "category": "orders",
+            "content": "We accept returns within 30 days of delivery for unused items in original packaging. Refunds are issued to the original payment method within 5-10 business days after we receive the item. To start a return, reply with your order number and reason. Damaged or wrong items are replaced free of charge and return shipping is on us.",
+            "id": "kb-returns",
+            "tags": [
+                "return",
+                "refund",
+                "exchange",
+                "damaged",
+                "warranty claim"
+            ],
+            "title": "Returns and refunds policy"
+        },
+        {
+            "category": "account",
+            "content": "To reset your password, click 'Forgot password' on the login page and enter your account email. You will receive a reset link valid for 30 minutes. If you cannot log in after resetting, clear your browser cookies or try an incognito window. Locked out after 5 attempts? Wait 15 minutes and try again.",
+            "id": "kb-password-reset",
+            "tags": [
+                "password",
+                "reset",
+                "login",
+                "locked out",
+                "sign in"
+            ],
+            "title": "How to reset your password"
+        },
+        {
+            "category": "onboarding",
+            "content": "Getting started checklist: 1) Verify your email with the link we sent. 2) Complete your company profile. 3) Connect your first integration from Settings > Integrations. 4) Invite your team. 5) Book the welcome call. Most teams reach their first value moment within a day. Reply to the welcome email any time for help.",
+            "id": "kb-onboarding",
+            "tags": [
+                "onboarding",
+                "getting started",
+                "setup",
+                "trial",
+                "welcome",
+                "checklist"
+            ],
+            "title": "Getting started and onboarding checklist"
+        },
+        {
+            "category": "billing",
+            "content": "Plans: Starter (free, up to 3 seats), Pro ($29/seat/month, unlimited tickets), Scale ($99/seat/month, SSO and audit log), Enterprise (custom pricing, dedicated support and SLA). Annual billing saves 20%. You can upgrade, downgrade or cancel from Settings > Billing at any time.",
+            "id": "kb-pricing",
+            "tags": [
+                "pricing",
+                "plans",
+                "enterprise",
+                "discount",
+                "subscription",
+                "scale",
+                "pro"
+            ],
+            "title": "Pricing plans and discounts"
+        },
+        {
+            "category": "developers",
+            "content": "To set up the API integration: 1) Create an API key in Settings > Developers. 2) Authenticate with header 'Authorization: Bearer <key>'. 3) POST tickets to /v1/tickets. Auth errors (401) almost always mean a revoked or mistyped key \u2014 regenerate it. Rate limit is 600 requests/minute. SDKs exist for Python and Node.",
+            "id": "kb-api-setup",
+            "tags": [
+                "api",
+                "integration",
+                "auth",
+                "setup",
+                "developer",
+                "errors"
+            ],
+            "title": "API setup and authentication errors"
+        },
+        {
+            "category": "billing",
+            "content": "Invoices are issued on the first day of each month and charged to your card on file. If you were charged twice, check whether one charge is a temporary authorization hold (it drops within 3 days). For real duplicate charges, send us the invoice numbers and we refund within 5 business days. Download past invoices from Settings > Billing.",
+            "id": "kb-billing",
+            "tags": [
+                "billing",
+                "invoice",
+                "charged twice",
+                "duplicate charge",
+                "payment"
+            ],
+            "title": "Invoices and duplicate charges"
+        },
+        {
+            "category": "product",
+            "content": "All hardware includes a 12-month warranty covering manufacturing defects. Batteries and accessories are covered for 6 months. Warranty does not cover accidental damage, but our repair program offers flat-rate fixes. To file a claim, provide your order number and a photo of the issue.",
+            "id": "kb-warranty",
+            "tags": [
+                "warranty",
+                "broken",
+                "defect",
+                "repair",
+                "claim"
+            ],
+            "title": "Warranty coverage and claims"
+        },
+        {
+            "category": "account",
+            "content": "New accounts must verify their email before ordering: click the verification link sent at signup (check spam). The link expires after 24 hours; request a new one from Settings > Account. Business accounts may also need domain verification via DNS TXT record.",
+            "id": "kb-account-verification",
+            "tags": [
+                "verify",
+                "verification",
+                "email",
+                "new account",
+                "signup"
+            ],
+            "title": "Account and email verification"
+        },
+        {
+            "category": "account",
+            "content": "SSO is available on Scale and Enterprise plans. We support SAML 2.0 (Okta, Entra ID, Google Workspace). Setup: go to Settings > Security > SSO, upload your IdP metadata XML, then map the email claim. Enforce SSO for all members once tested. Contact support to enable SCIM provisioning.",
+            "id": "kb-sso",
+            "tags": [
+                "sso",
+                "saml",
+                "okta",
+                "login",
+                "enterprise",
+                "security"
+            ],
+            "title": "Configuring SSO (SAML)"
+        }
+    ]
+}
