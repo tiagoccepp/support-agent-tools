@@ -1,0 +1,138 @@
+[
+  {
+    "id": "t01-password-reset",
+    "description": "KB how-to + ticket + email confirmation",
+    "input": "Hi, I forgot my password and can't log in. How do I reset it? My email is alice@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t02-stock-check",
+    "description": "Parallel KB + inventory lookup for a SKU",
+    "input": "Do you have ACME-1001 in stock? Need 3 units. Contact: bob@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "inventory_lookup", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t03-shipping-status",
+    "description": "Order/shipping question without email (no confirmation email)",
+    "input": "Where is my order? How long does shipping take?",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "inventory_lookup", "db_create_ticket"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t04-return",
+    "description": "Return/refund policy via KB",
+    "input": "I want to return my Widget Pro, how do refunds work? carol@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t05-onboarding",
+    "description": "New signup gets customer row + checklist + welcome email",
+    "input": "Hi! I'm Dave, just signed up. dave@newco.com - how do I get started with onboarding?",
+    "expected_agents": ["triage", "onboarding"],
+    "expected_tools": ["handoff_to", "db_create_customer", "db_create_onboarding", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t06-onboarding-no-email",
+    "description": "Onboarding without email skips the welcome mail",
+    "input": "We just created a new account for our team, need help with setup and first steps",
+    "expected_agents": ["triage", "onboarding"],
+    "expected_tools": ["handoff_to", "db_create_customer", "db_create_onboarding"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t07-escalate-angry",
+    "description": "Legal threat escalates straight from triage",
+    "input": "This is disgusting, your product broke everything. I'm going to sue you. eve@example.com",
+    "expected_agents": ["triage"],
+    "expected_tools": ["handoff_to"],
+    "expected_outcome": "escalated"
+  },
+  {
+    "id": "t08-escalate-human",
+    "description": "Demand for a human escalates from triage",
+    "input": "I want to talk to a real person, this is ridiculous",
+    "expected_agents": ["triage"],
+    "expected_tools": ["handoff_to"],
+    "expected_outcome": "escalated"
+  },
+  {
+    "id": "t09-pricing",
+    "description": "Pricing question answered from KB",
+    "input": "What are your pricing plans? Is there an enterprise discount? frank@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t10-out-of-stock",
+    "description": "Out-of-stock SKU still resolves with inventory facts",
+    "input": "Is ACME-1007 available? I need it urgently. grace@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "inventory_lookup", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t11-api-setup",
+    "description": "API auth errors via KB (must not misroute to onboarding)",
+    "input": "How do I set up the API integration? Getting auth errors. heidi@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t12-warranty",
+    "description": "Broken product under warranty",
+    "input": "My Gadget X broke after 2 months, is it under warranty? ivan@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t13-billing",
+    "description": "Duplicate charge billing question",
+    "input": "I was charged twice on my last invoice, need help with billing. judy@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t14-trial-migration",
+    "description": "Scale-plan trial onboarding with plan detection",
+    "input": "We started a trial for the scale plan, how do we migrate our data? My name is Karl, karl@bigco.com",
+    "expected_agents": ["triage", "onboarding"],
+    "expected_tools": ["handoff_to", "db_create_customer", "db_create_onboarding", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t15-gibberish",
+    "description": "No KB/inventory evidence -> support escalates",
+    "input": "asdf qwer zxcv blorp 12345",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "handoff_to"],
+    "expected_outcome": "escalated"
+  },
+  {
+    "id": "t16-sso",
+    "description": "SSO configuration question",
+    "input": "How do I configure SSO for my team? leo@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "db_create_ticket", "email_send"],
+    "expected_outcome": "resolved"
+  },
+  {
+    "id": "t17-reserve",
+    "description": "Reserve units of a SKU",
+    "input": "Please reserve 2 units of ACME-2001 for me. mia@example.com",
+    "expected_agents": ["triage", "support"],
+    "expected_tools": ["handoff_to", "kb_search", "inventory_lookup", "db_create_ticket", "inventory_reserve", "email_send"],
+    "expected_outcome": "resolved"
+  }
+]
