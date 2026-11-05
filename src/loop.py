@@ -303,9 +303,10 @@ class RuleBasedLLMClient:
 class OpenAILLMClient:
     """Production client: OpenAI Chat Completions with function calling (httpx)."""
 
-    def __init__(self, api_key: str, model: str) -> None:
+    def __init__(self, api_key: str, model: str, base_url: str = "https://api.openai.com/v1") -> None:
         self._api_key = api_key
         self._model = model
+        self._base_url = base_url.rstrip("/")
 
     async def chat(
         self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
@@ -338,7 +339,7 @@ class OpenAILLMClient:
                 openai_messages.append({"role": role, "content": str(message.get("content", ""))})
         async with httpx.AsyncClient(timeout=60) as client:
             response = await client.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{self._base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {self._api_key}"},
                 json={"model": self._model, "messages": openai_messages, "tools": tools or None,
                       "tool_choice": "auto" if tools else "none"},
@@ -387,7 +388,7 @@ class AgentLoop:
         if llm is not None:
             self.llm = llm
         elif not settings.mock_mode and settings.openai_api_key:
-            self.llm = OpenAILLMClient(settings.openai_api_key, settings.model)
+            self.llm = OpenAILLMClient(settings.openai_api_key, settings.model, settings.openai_base_url)
         else:
             self.llm = RuleBasedLLMClient()
         self.max_steps = max_steps or settings.max_steps
