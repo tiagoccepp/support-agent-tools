@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from src.config import settings
@@ -38,6 +39,12 @@ def _build_loop(max_steps: int | None) -> AgentLoop:
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {"status": "ok", "mock_mode": settings.mock_mode, "model": settings.model}
+
+
+@app.get("/ui", include_in_schema=False)
+def ui() -> FileResponse:
+    """Minimal demo UI (single static file, no build step)."""
+    return FileResponse(Path(__file__).resolve().parent / "static" / "ui.html")
 
 
 @app.get("/tools")

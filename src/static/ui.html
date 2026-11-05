@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support Agent Tools — demo</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  #log { display: flex; flex-direction: column; gap: .6rem; margin: 1rem 0; min-height: 200px; }
+  .msg { border-radius: 8px; padding: .6rem .9rem; max-width: 90%; }
+  .user { align-self: flex-end; background: #0969da; color: #fff; }
+  .bot { align-self: flex-start; background: #8882; }
+  .meta { font-size: .78rem; color: #888; margin-top: .3rem; }
+  .badge { display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .75rem; margin-right: .3rem; }
+  .ok { background: #1a7f37; color: #fff; }
+  .warn { background: #9a6700; color: #fff; }
+  .row { display: flex; gap: .5rem; }
+  input[type=text] { flex: 1; padding: .6rem; font-size: 1rem; }
+  button { padding: .6rem 1rem; font-size: 1rem; cursor: pointer; }
+  .samples button { font-size: .85rem; padding: .3rem .6rem; margin: 0 .3rem .3rem 0; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<h1>Support Agent Tools <span class="meta">— offline demo (mock LLM)</span></h1>
+<div class="samples">
+  <button onclick="send('I forgot my password, how do I reset it? alice@example.com')">password reset</button>
+  <button onclick="send('Do you have ACME-1001 in stock? Need 3 units.')">stock check</button>
+  <button onclick="send('Hi I am Dave, just signed up, how do I get started? dave@newco.com')">onboarding</button>
+  <button onclick="send('Your product broke everything, I am going to sue you.')">angry ⛔</button>
+</div>
+<div id="log"></div>
+<div class="row">
+  <input id="m" type="text" placeholder="Type a customer message…" onkeydown="if(event.key==='Enter')sendInput()">
+  <button onclick="sendInput()">Send</button>
+</div>
+<p class="meta"><a href="/docs">API docs</a> · POST /chat · POST /chat/stream (SSE) · PII is redacted in/out</p>
+<script>
+function bubble(cls, text, meta){
+  const log = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.innerHTML = text + (meta ? '<div class="meta">' + meta + '</div>' : '');
+  log.appendChild(d);
+  d.scrollIntoView();
+  return d;
+}
+function sendInput(){ const i = document.getElementById('m'); if(i.value.trim()) send(i.value); i.value=''; }
+async function send(text){
+  bubble('user', text);
+  const thinking = bubble('bot', '…');
+  const r = await fetch('/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: text})});
+  const j = await r.json();
+  const badge = j.escalated ? '<span class="badge warn">ESCALATED</span>' : '<span class="badge ok">RESOLVED</span>';
+  thinking.innerHTML = badge + ' ' + j.answer +
+    '<div class="meta">path: ' + j.agents_path.join(' → ') + ' · tools: ' + j.tools_called.join(', ') +
+    (j.ticket_id ? ' · ticket #' + j.ticket_id : '') + ' · ' + j.iterations + ' iterations</div>';
+  thinking.scrollIntoView();
+}
+</script>
+</body>
+</html>
