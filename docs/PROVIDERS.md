@@ -11,7 +11,8 @@ OpenAI-compatible endpoint works. Tests, evals and the demo run offline
 | OpenAI | `https://api.openai.com/v1` (default) | `OPENAI_API_KEY` | paid |
 | OpenRouter | `https://openrouter.ai/api/v1` | free key at openrouter.ai/keys | free `:free` models, no card |
 | Ollama (local) | `http://localhost:11434/v1` | none needed | free, private |
-| opencode Zen / other gateways | your gateway URL | your gateway key | varies |
+| opencode Zen ✅ verified | `https://opencode.ai/zen/go/v1` | your Zen key | free `beam-free` model ($0) |
+| other gateways | your gateway URL | your gateway key | varies |
 
 ## Configure
 
@@ -36,6 +37,9 @@ reports whether the model called the tool, and never prints the key.
 CI stays keyless: tests and evals always use the rule-based mock.
 
 ## Notes
+
+- Zen requires an `x-opencode-session` header — `scripts/live_smoke.py` sends it
+  automatically (override with `OPENCODE_SESSION_ID`); other providers ignore it.
 
 - Small/free models sometimes answer in prose instead of emitting a tool
   call; the smoke reports the outcome without failing on model behavior.

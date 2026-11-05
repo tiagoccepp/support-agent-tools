@@ -25,7 +25,7 @@ if not KEY and not LOCAL:
 payload = {
     "model": MODEL,
     "temperature": 0.0,
-    "max_tokens": 300,
+    "max_tokens": 1024,  # reasoning models spend tokens thinking before answering
     "tools": [{
         "type": "function",
         "function": {
@@ -40,7 +40,7 @@ payload = {
 req = urllib.request.Request(
     f"{BASE}/chat/completions",
     data=json.dumps(payload).encode(),
-    headers={"Content-Type": "application/json", "Authorization": f"Bearer {KEY}"},
+    headers={"Content-Type": "application/json", "Authorization": f"Bearer {KEY}", "User-Agent": "portfolio-live-smoke/1.0", "x-opencode-session": os.getenv("OPENCODE_SESSION_ID", "live-smoke")},  # Zen API requires the session header; ignored by OpenAI/OpenRouter
 )
 t0 = time.time()
 try:

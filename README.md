@@ -7,6 +7,8 @@ model provider at test time.
 
 > Built with agentic coding assistants (**Claude Code / Cursor** style workflow): spec-first,
 > test-driven, docs-as-code. See `ARCHITECTURE.md` for the full design rationale.
+>
+> ✅ **Live-verified** against a real LLM API: real function-calling confirmed (opencode Zen, free `beam-free` model, 2026-11-05) — see `docs/LIVE_VERIFIED.md`.
 
 ## Problem
 
