@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from src.config import settings
 from src.loop import AgentLoop
+from src.ratelimit import RateLimitMiddleware
 from src.tools import TOOL_REGISTRY
 
 
@@ -30,6 +31,7 @@ class ChatResponse(BaseModel):
 
 
 app = FastAPI(title="Support Agent Tools", version="0.1.0")
+app.add_middleware(RateLimitMiddleware, prefixes=("/chat",))
 
 
 def _build_loop(max_steps: int | None) -> AgentLoop:
