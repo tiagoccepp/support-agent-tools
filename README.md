@@ -5,8 +5,7 @@ built with an explicit **tool-use loop**, **parallel tool calls**, **agent hando
 **guardrails** — following the OpenAI Agents SDK pattern, with zero hard dependency on any
 model provider at test time.
 
-> Built with agentic coding assistants (**Claude Code / Cursor** style workflow): spec-first,
-> test-driven, docs-as-code. See `ARCHITECTURE.md` for the full design rationale.
+> I designed the agent topology and guardrails, built it with AI assistance (Claude Code), and verified behavior through trajectory evals. See `ARCHITECTURE.md` for the full design rationale.
 >
 > ✅ **Live-verified** against a real LLM API: real function-calling confirmed (opencode Zen, free `beam-free` model, 2026-11-05) — see `docs/LIVE_VERIFIED.md`.
 
