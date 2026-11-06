@@ -71,9 +71,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
 async def chat_stream(request: ChatRequest) -> StreamingResponse:
     loop = _build_loop(request.max_steps)
 
+    def _json_default(o: Any) -> Any:
+        if isinstance(o, BaseModel):
+            return o.model_dump(mode="json")
+        return str(o)
+
     async def _events():
         async for event in loop.run_stream(request.message):
-            yield f"data: {json.dumps(event, default=str)}\n\n"
+            yield f"data: {json.dumps(event, default=_json_default)}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(_events(), media_type="text/event-stream")
