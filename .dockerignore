@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+tests/
+eval/
+demo/
+docs/
+*.md
+.gitignore
+scripts/
+demo.sh
