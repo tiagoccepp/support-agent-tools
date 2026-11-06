@@ -301,12 +301,59 @@ class RuleBasedLLMClient:
         return "starter"
 
 
+# Free-model rotation pool. Every entry returned cost=0 on the 2026-11-06 probe
+# with the demo key. Distinct vendors: a vendor-level removal still leaves
+# answers working. Override with LLM_FALLBACK_MODELS="m1,m2" (primary first).
+FREE_POOL = [
+    "beam-free", "iceman-contributor-free", "crouton-alpha-free",
+    "deepseek-v4.1-flash", "qwen3.8-flash", "minimax-m3.1-flash", "glm-5.3-flash",
+]
+
+
+def rotation_list(primary: str, fallback_csv: str = "") -> list[str]:
+    """Primary first, then explicit fallbacks (or FREE_POOL), deduped."""
+    rest = [m.strip() for m in fallback_csv.split(",") if m.strip()] or [
+        m for m in FREE_POOL if m != primary
+    ]
+    seen = {primary}
+    out = [primary]
+    for m in rest:
+        if m not in seen:
+            seen.add(m)
+            out.append(m)
+    return out
+
+
+def _retryable(exc: BaseException) -> bool:
+    """Retry removed/rate-limited/crashed models; never retry auth/bad-request."""
+    status = getattr(exc, "status_code", None)
+    if status is None:
+        resp = getattr(exc, "response", None)
+        status = getattr(resp, "status_code", None)
+    if status is not None:
+        try:
+            code = int(status)
+        except (TypeError, ValueError):
+            return False
+        if code == 400:
+            # Zen reports removed models as 400 "Model is unavailable" —
+            # rotate only on model-availability signals, not param errors.
+            msg = str(getattr(exc, "message", "") or exc).lower()
+            gone = ("unavailable", "not found", "notfound", "unknown model",
+                    "no such model", "deprecated", "removed", "does not exist")
+            return "model" in msg and any(s in msg for s in gone)
+        return code in (404, 408, 409, 429) or code >= 500
+    name = type(exc).__name__.lower()
+    return "connect" in name or "timeout" in name or "transport" in name
+
+
 class OpenAILLMClient:
     """Production client: OpenAI Chat Completions with function calling (httpx)."""
 
-    def __init__(self, api_key: str, model: str, base_url: str = "https://api.openai.com/v1") -> None:
+    def __init__(self, api_key: str, model: str, base_url: str = "https://api.openai.com/v1", models: list[str] | None = None) -> None:
         self._api_key = api_key
         self._model = model
+        self._models = models or [model]
         self._base_url = base_url.rstrip("/")
 
     async def chat(
@@ -338,24 +385,35 @@ class OpenAILLMClient:
                 })
             else:
                 openai_messages.append({"role": role, "content": str(message.get("content", ""))})
+        last: BaseException | None = None
+        choice: dict[str, Any] = {}
         async with httpx.AsyncClient(timeout=60) as client:
-            try:
-                response = await client.post(
-                    f"{self._base_url}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {self._api_key}",
-                        "User-Agent": "portfolio-live-smoke/1.0",
-                        "x-opencode-session": os.getenv("OPENCODE_SESSION_ID", "portfolio-api"),
-                    },
-                    json={"model": self._model, "messages": openai_messages, "tools": tools or None,
-                          "tool_choice": "auto" if tools else "none"},
-                )
-                response.raise_for_status()
-            except Exception as exc:
-                body = getattr(getattr(exc, "response", None), "text", "")[:500]
-                print(f"[llm] call failed: {exc} | body: {body}")
-                raise
-            choice = response.json()["choices"][0]["message"]
+            for m in self._models:
+                try:
+                    response = await client.post(
+                        f"{self._base_url}/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {self._api_key}",
+                            "User-Agent": "portfolio-live-smoke/1.0",
+                            "x-opencode-session": os.getenv("OPENCODE_SESSION_ID", "portfolio-api"),
+                        },
+                        json={"model": m, "messages": openai_messages, "tools": tools or None,
+                              "tool_choice": "auto" if tools else "none"},
+                    )
+                    response.raise_for_status()
+                except Exception as exc:
+                    if not _retryable(exc):
+                        raise
+                    last = exc
+                    continue
+                choice = response.json()["choices"][0]["message"]
+                self._model = m
+                last = None
+                break
+            if last is not None:
+                body = getattr(getattr(last, "response", None), "text", "")[:500]
+                print(f"[llm] all models failed: {last} | body: {body}")
+                raise last
         tool_calls = [
             ToolCallRequest(
                 call_id=tc.get("id", f"call-{uuid.uuid4().hex[:8]}"),
@@ -398,7 +456,10 @@ class AgentLoop:
         if llm is not None:
             self.llm = llm
         elif not settings.mock_mode and settings.openai_api_key:
-            self.llm = OpenAILLMClient(settings.openai_api_key, settings.model, settings.openai_base_url)
+            self.llm = OpenAILLMClient(
+                settings.openai_api_key, settings.model, settings.openai_base_url,
+                models=rotation_list(settings.model, settings.llm_fallback_models),
+            )
         else:
             self.llm = RuleBasedLLMClient()
         self.max_steps = max_steps or settings.max_steps

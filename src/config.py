@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
     model: str = "gpt-4o-mini"
+    llm_fallback_models: str = ""
     mock_mode: bool = True
     max_steps: int = 12
     max_input_chars: int = 4000
