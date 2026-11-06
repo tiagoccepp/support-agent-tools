@@ -1,5 +1,6 @@
-# Render Blueprint: one-click deploy (free tier OK). Keys marked
-# sync:false are filled once in the Render dashboard; see docs/DEPLOY.md.
+# Render Blueprint: one-click deploy (free tier OK). Paste your LLM key once
+# in the Render dashboard when prompted (OPENAI_API_KEY); everything else
+# is preconfigured. See docs/DEPLOY.md.
 services:
   - type: web
     name: support-agent-tools
@@ -8,10 +9,12 @@ services:
     healthCheckPath: /health
     envVars:
       - key: MOCK_MODE
-        value: "true"
+        value: "false"
       - key: MODEL
-        value: gpt-4o-mini
+        value: beam-free
       - key: OPENAI_API_KEY
         sync: false
       - key: OPENAI_BASE_URL
-        value: https://api.openai.com/v1
+        value: https://opencode.ai/zen/go/v1
+      - key: OPENCODE_SESSION_ID
+        value: render-prod
