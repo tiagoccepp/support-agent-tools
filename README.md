@@ -10,6 +10,12 @@ model provider at test time.
 >
 > ✅ **Live-verified** against a real LLM API: real function-calling confirmed (opencode Zen, free `beam-free` model, 2026-11-05) — see `docs/LIVE_VERIFIED.md`.
 
+## Demo
+
+![Support Agent Tools demo UI](docs/img/ui.png)
+
+*Stock-check flow: Triage → Support handoff with the tools used (`kb_search`, `inventory_lookup`, `db_create_ticket`) — `./demo.sh`, then open `/ui`.*
+
 ## Problem
 
 Support teams drown in repetitive tickets: password resets, order status, stock questions,
