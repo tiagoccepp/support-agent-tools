@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -32,6 +33,14 @@ class ChatResponse(BaseModel):
 
 app = FastAPI(title="Support Agent Tools", version="0.1.0")
 app.add_middleware(RateLimitMiddleware, prefixes=("/chat",))
+# Public demo API: allow browser fetches from the portfolio dashboard.
+# Rate-limited, no credentials — safe to be open.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def _build_loop(max_steps: int | None) -> AgentLoop:
