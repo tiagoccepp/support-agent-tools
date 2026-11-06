@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 import uuid
 from typing import Any, Protocol
@@ -338,13 +339,22 @@ class OpenAILLMClient:
             else:
                 openai_messages.append({"role": role, "content": str(message.get("content", ""))})
         async with httpx.AsyncClient(timeout=60) as client:
-            response = await client.post(
-                f"{self._base_url}/chat/completions",
-                headers={"Authorization": f"Bearer {self._api_key}"},
-                json={"model": self._model, "messages": openai_messages, "tools": tools or None,
-                      "tool_choice": "auto" if tools else "none"},
-            )
-            response.raise_for_status()
+            try:
+                response = await client.post(
+                    f"{self._base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self._api_key}",
+                        "User-Agent": "portfolio-live-smoke/1.0",
+                        "x-opencode-session": os.getenv("OPENCODE_SESSION_ID", "portfolio-api"),
+                    },
+                    json={"model": self._model, "messages": openai_messages, "tools": tools or None,
+                          "tool_choice": "auto" if tools else "none"},
+                )
+                response.raise_for_status()
+            except Exception as exc:
+                body = getattr(getattr(exc, "response", None), "text", "")[:500]
+                print(f"[llm] call failed: {exc} | body: {body}")
+                raise
             choice = response.json()["choices"][0]["message"]
         tool_calls = [
             ToolCallRequest(
@@ -483,6 +493,13 @@ class AgentLoop:
                 messages.append({"role": "assistant", "content": response.content or "",
                                  "tool_calls": [{"call_id": tc.call_id, "name": tc.name,
                                                  "arguments": tc.arguments} for tc in handoffs]})
+                for tc in handoffs:
+                    # Synthetic tool result: OpenAI-compatible APIs 400 when an
+                    # assistant message lists tool_calls with no following tool
+                    # message. Handoffs run locally, so acknowledge them here.
+                    messages.append({"role": "tool", "tool_call_id": tc.call_id,
+                                     "name": "handoff_to",
+                                     "content": json.dumps({"ok": True, "to": tc.arguments.get("target_agent", "")})})
 
             for handoff in handoffs:
                 target = str(handoff.arguments.get("target_agent", ""))

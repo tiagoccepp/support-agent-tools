@@ -145,7 +145,13 @@ header,.panel,.samples{animation:rise .35s ease-out backwards}
 </main>
 <footer>POST /chat · POST /chat/stream (SSE) · single static file, no build step, runs offline</footer>
 <script>
+/*__FIXTURES__*/
 const $=id=>document.getElementById(id);
+const DEMO=/[?&]demo=1(&|$)/.test(location.search);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const FIXMAP={"I forgot my password, how do I reset it? alice@example.com":"m_password","Do you have ACME-1001 in stock? Need 3 units.":"m_stock","Hi I am Dave, just signed up, how do I get started? dave@newco.com":"m_onboard","Your product broke everything, I am going to sue you.":"m_angry"};
+if(DEMO){const c=document.querySelector('.chip.live');if(c)c.innerHTML='◉ sample responses';
+const b=document.createElement('div');b.style.cssText='background:rgba(52,199,123,.1);border-bottom:1px solid rgba(52,199,123,.4);color:#34C77B;font-family:var(--font-mono);font-size:.75rem;text-align:center;padding:.4rem .8rem';b.textContent='Sample mode — pre-recorded real trajectories (beam-free). Open without ?demo=1 against a live backend.';document.body.prepend(b);}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short=(o,n=220)=>{const s=typeof o==='string'?o:JSON.stringify(o);return s.length>n?s.slice(0,n)+'…':s;};
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -177,6 +183,26 @@ function node(kind,title,bodyHtml,warn){
   $('tline').scrollTop=$('tline').scrollHeight;
   return d;
 }
+function handleEv(ev){
+  if(ev.type==='agent_start')node('agent','<code>'+esc(ev.agent)+'</code> takes the turn');
+  else if(ev.type==='handoff')node('handoff','<code>'+esc(ev.from)+' → '+esc(ev.to)+'</code>',ev.reason?'<div class="res">'+esc(ev.reason)+'</div>':'',ev.to==='escalate');
+  else if(ev.type==='tool_call')node('tool','<code>'+esc(ev.name)+'</code>','<details><summary>arguments</summary><pre>'+esc(short(ev.arguments,400))+'</pre></details>');
+  else if(ev.type==='tool_result'){const ok=!ev.result||ev.result.ok!==false;node('result','<code>'+esc(ev.name)+'</code>', '<div class="res">'+(ok?'<b class="ok">✓ ok</b>':'<b class="bad">✗ failed</b>')+' '+esc(short(ev.result,160))+'</div>');}
+  else if(ev.type==='final')return ev.result;
+  else if(ev.type==='error')node('error','run failed','<div class="res">'+esc(ev.error)+'</div>',true);
+  return null;
+}
+function finalize(el,final,ms){
+  if(final){
+    const badge=final.escalated?'<span class="badge warn">ESCALATED</span>':'<span class="badge ok">RESOLVED</span>';
+    el.innerHTML=badge+' '+esc(final.final_answer)+
+      '<div class="meta">path '+(final.agents_path||[]).join(' → ')+' · '+(final.tools_called||[]).length+' tools · '+(final.iterations??'?')+' iterations'+(final.ticket_id?' · ticket #'+final.ticket_id:'')+(DEMO?' · sample':'')+'</div>';
+    node(final.escalated?'escalated':'done',final.escalated?'Handed to a <code>human specialist</code>':'<code>Resolved</code> in '+(final.iterations??'?')+' iterations',null,final.escalated);
+    $('railstats').innerHTML=(final.agents_path||[]).join(' → ')+'<br>'+(final.tools_called||[]).length+' tool calls · '+(final.iterations??'?')+' iterations · '+ms+'ms'+(DEMO?'<br>sample mode · recorded trajectory':'');
+  }else{
+    el.innerHTML='<div class="err">Stream ended without a final answer.</div>';
+  }
+}
 async function send(text){
   text=(text||'').trim();
   if(!text||busy)return;
@@ -188,11 +214,21 @@ async function send(text){
   const t0=performance.now();
   const timer=setInterval(()=>{$('evTimer').textContent='· '+((performance.now()-t0)/1000).toFixed(1)+'s';},100);
   const finish=(ms)=>{clearInterval(timer);$('evTimer').textContent='· '+(ms/1000).toFixed(1)+'s';setBusy(false);el.scrollIntoView({block:'nearest'});};
+  if(DEMO){
+    const key=FIXMAP[text];
+    if(!key||typeof FIXTURES==='undefined'||!FIXTURES[key]){clearInterval(timer);$('evTimer').textContent='';el.innerHTML='<div class="err">Sample mode includes the 4 sample messages above — pick one to replay a recorded real trajectory.</div>';$('railstats').textContent='No run yet.';setBusy(false);return;}
+    await sleep(400);
+    let final=null;
+    for(const ev of FIXTURES[key]){const fr=handleEv(ev);if(fr)final=fr;await sleep(340);}
+    const dms=Math.round(performance.now()-t0);
+    finalize(el,final,dms);finish(dms);
+    return;
+  }
   try{
     const r=await fetch('/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
     if(!r.ok||!r.body)throw new Error('HTTP '+r.status);
     const reader=r.body.getReader(),dec=new TextDecoder();
-    let buf='',final=null,tools=0;
+    let buf='',final=null;
     for(;;){
       const {done,value}=await reader.read();
       if(done)break;
@@ -205,29 +241,17 @@ async function send(text){
           const payload=line.slice(5).trim();
           if(payload==='[DONE]')continue;
           let ev;try{ev=JSON.parse(payload);}catch{continue;}
-          if(ev.type==='agent_start')node('agent','<code>'+esc(ev.agent)+'</code> takes the turn');
-          else if(ev.type==='handoff')node('handoff','<code>'+esc(ev.from)+' → '+esc(ev.to)+'</code>',ev.reason?'<div class="res">'+esc(ev.reason)+'</div>':'',ev.to==='escalate');
-          else if(ev.type==='tool_call'){tools++;node('tool','<code>'+esc(ev.name)+'</code>','<details><summary>arguments</summary><pre>'+esc(short(ev.arguments,400))+'</pre></details>');}
-          else if(ev.type==='tool_result'){const ok=!ev.result||ev.result.ok!==false;node('result','<code>'+esc(ev.name)+'</code>', '<div class="res">'+(ok?'<b class="ok">✓ ok</b>':'<b class="bad">✗ failed</b>')+' '+esc(short(ev.result,160))+'</div>');}
-          else if(ev.type==='final')final=ev.result;
-          else if(ev.type==='error')node('error','run failed','<div class="res">'+esc(ev.error)+'</div>',true);
+          const fr=handleEv(ev);if(fr)final=fr;
         }
       }
     }
     const ms=Math.round(performance.now()-t0);
-    if(final){
-      const badge=final.escalated?'<span class="badge warn">ESCALATED</span>':'<span class="badge ok">RESOLVED</span>';
-      el.innerHTML=badge+' '+esc(final.final_answer)+
-        '<div class="meta">path '+(final.agents_path||[]).join(' → ')+' · '+(final.tools_called||[]).length+' tools · '+(final.iterations??'?')+' iterations'+(final.ticket_id?' · ticket #'+final.ticket_id:'')+'</div>';
-      node(final.escalated?'escalated':'done',final.escalated?'Handed to a <code>human specialist</code>':'<code>Resolved</code> in '+(final.iterations??'?')+' iterations',null,final.escalated);
-      $('railstats').innerHTML=(final.agents_path||[]).join(' → ')+'<br>'+(final.tools_called||[]).length+' tool calls · '+(final.iterations??'?')+' iterations · '+ms+'ms';
-    }else{
-      el.innerHTML='<div class="err">Stream ended without a final answer.</div>';
-    }
+    finalize(el,final,ms);
     finish(ms);
   }catch(e){
     clearInterval(timer);$('evTimer').textContent='';
-    el.innerHTML='<div class="err">Request failed ('+esc(e.message)+'). Is the API running?</div>';
+    const staticHost=!DEMO&&!/^(localhost|127\.0\.0\.1)/.test(location.hostname);
+    el.innerHTML='<div class="err">Request failed ('+esc(e.message)+'). '+(staticHost?'No backend here — <a href="?demo=1">open sample mode</a>.':'Is the API running?')+'</div>';
     node('error','connection failed','<div class="res">'+esc(e.message)+'</div>',true);
     setBusy(false);
   }

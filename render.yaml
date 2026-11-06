@@ -1,0 +1,17 @@
+# Render Blueprint: one-click deploy (free tier OK). Keys marked
+# sync:false are filled once in the Render dashboard; see docs/DEPLOY.md.
+services:
+  - type: web
+    name: support-agent-tools
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: MOCK_MODE
+        value: "true"
+      - key: MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1

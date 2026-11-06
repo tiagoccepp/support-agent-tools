@@ -11,9 +11,13 @@ model provider at test time.
 
 ## Demo
 
+**Try it now (no install):** [instant demo](https://tiagoccepp.github.io/support-agent-tools/?demo=1) — pre-recorded real agent trajectories, loads in seconds.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tiagoccepp/support-agent-tools)
+
 ![Support Agent Tools demo UI](docs/img/ui.png)
 
-*Stock-check flow: Triage → Support handoff with the tools used (`kb_search`, `inventory_lookup`, `db_create_ticket`) — `./demo.sh`, then open `/ui`.*
+*Stock-check flow: Triage → Support handoff with the tools used (`kb_search`, `inventory_lookup`, `db_create_ticket`) — `./demo.sh`, then open `/ui`. The instant demo above replays the same UI with recorded live trajectories (`?demo=1` sample mode).*
 
 ## Problem
 

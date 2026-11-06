@@ -1,0 +1,52 @@
+[
+ {
+  "type": "agent_start",
+  "agent": "triage"
+ },
+ {
+  "type": "handoff",
+  "from": "triage",
+  "to": "escalate",
+  "reason": "Customer threatens lawsuit and expresses anger about product breaking everything."
+ },
+ {
+  "type": "final",
+  "result": {
+   "final_answer": "Escalated to a human specialist. Reason: Customer threatens lawsuit and expresses anger about product breaking everything.",
+   "resolved": false,
+   "escalated": true,
+   "agents_path": [
+    "triage"
+   ],
+   "tools_called": [
+    "handoff_to"
+   ],
+   "steps": [
+    {
+     "step": 0,
+     "agent": "triage",
+     "kind": "guardrail",
+     "name": "validate+redact",
+     "summary": "input validated, contact=none"
+    },
+    {
+     "step": 1,
+     "agent": "triage",
+     "kind": "llm",
+     "name": "chat",
+     "summary": "1 tool call(s)"
+    },
+    {
+     "step": 1,
+     "agent": "triage",
+     "kind": "handoff",
+     "name": "triage->escalate",
+     "summary": "Customer threatens lawsuit and expresses anger about product breaking everything."
+    }
+   ],
+   "ticket_id": null,
+   "verified_email": null,
+   "iterations": 1
+  }
+ }
+]

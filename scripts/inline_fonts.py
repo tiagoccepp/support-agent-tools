@@ -8,6 +8,7 @@ writes src/static/ui.html. Run after editing ui.src.html:
     python scripts/inline_fonts.py
 """
 import base64
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -20,6 +21,7 @@ FONTS = [
     ("JetBrainsMono", "600", "JetBrainsMono-600.woff2"),
 ]
 TOKEN = "/*__FONT_FACE__*/"
+FIXTURES_TOKEN = "/*__FIXTURES__*/"
 
 
 def main() -> None:
@@ -34,8 +36,15 @@ def main() -> None:
     src = (ROOT / "src" / "static" / "ui.src.html").read_text()
     assert TOKEN in src, "font token missing in ui.src.html"
     out = src.replace(TOKEN, "\n".join(rules))
+    assert FIXTURES_TOKEN in out, "fixtures token missing in ui.src.html"
+    fixtures: dict = {}
+    fdir = ROOT / "demo" / "fixtures"
+    if fdir.is_dir():
+        for p in sorted(fdir.glob("*.json")):
+            fixtures[p.stem] = json.loads(p.read_text())
+    out = out.replace(FIXTURES_TOKEN, "const FIXTURES=" + json.dumps(fixtures, separators=(",", ":")) + ";")
     (ROOT / "src" / "static" / "ui.html").write_text(out)
-    print(f"wrote ui.html ({len(out) // 1024} KB)")
+    print(f"wrote ui.html ({len(out) // 1024} KB, {len(fixtures)} fixtures)")
 
 
 if __name__ == "__main__":

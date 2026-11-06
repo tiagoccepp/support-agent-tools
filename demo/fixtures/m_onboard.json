@@ -1,0 +1,71 @@
+[
+ {
+  "type": "agent_start",
+  "agent": "triage"
+ },
+ {
+  "type": "handoff",
+  "from": "triage",
+  "to": "onboarding",
+  "reason": "Customer just signed up and asks how to get started."
+ },
+ {
+  "type": "agent_start",
+  "agent": "onboarding"
+ },
+ {
+  "type": "final",
+  "result": {
+   "final_answer": "Handed off to onboarding.",
+   "resolved": true,
+   "escalated": false,
+   "agents_path": [
+    "triage",
+    "onboarding"
+   ],
+   "tools_called": [
+    "handoff_to"
+   ],
+   "steps": [
+    {
+     "step": 0,
+     "agent": "triage",
+     "kind": "guardrail",
+     "name": "validate+redact",
+     "summary": "input validated, contact=set"
+    },
+    {
+     "step": 1,
+     "agent": "triage",
+     "kind": "llm",
+     "name": "chat",
+     "summary": "1 tool call(s)"
+    },
+    {
+     "step": 1,
+     "agent": "triage",
+     "kind": "handoff",
+     "name": "triage->onboarding",
+     "summary": "Customer just signed up and asks how to get started."
+    },
+    {
+     "step": 2,
+     "agent": "onboarding",
+     "kind": "llm",
+     "name": "chat",
+     "summary": "Handed off to onboarding."
+    },
+    {
+     "step": 2,
+     "agent": "onboarding",
+     "kind": "final",
+     "name": "answer",
+     "summary": "Handed off to onboarding."
+    }
+   ],
+   "ticket_id": null,
+   "verified_email": "dave@newco.com",
+   "iterations": 2
+  }
+ }
+]
