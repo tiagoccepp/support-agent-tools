@@ -12,6 +12,7 @@ for i in $(seq 1 25); do
   curl -s -m 2 "http://127.0.0.1:$PORT/health" | grep -q '"status":"ok"' && break || sleep 1
 done
 echo "Health:"; curl -s "http://127.0.0.1:$PORT/health"; echo
+echo "UI:   http://127.0.0.1:$PORT/ui  (open in browser)"
 echo "Try:"
 echo "  curl -s -X POST http://127.0.0.1:$PORT/chat -H 'Content-Type: application/json' -d '{\"message\":\"I forgot my password, how do I reset it?\"}'"
 echo "Press Ctrl-C to stop."
